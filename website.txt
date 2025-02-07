@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL/QR Safety Checker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Check URL/QR Safety</h1>
+        <form id="urlForm">
+            <label for="urlInput">Enter URL:</label>
+            <input type="text" id="urlInput" placeholder="https://example.com" required>
+            <button type="submit">Check URL</button>
+        </form>
+
+        <form id="qrForm">
+            <label for="qrInput">Upload QR Code:</label>
+            <input type="file" id="qrInput" accept="image/*" required>
+            <button type="submit">Check QR Code</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+input, button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#result {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+}
+document.getElementById('urlForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = document.getElementById('urlInput').value;
+
+    // Send URL to backend for analysis
+    const result = await fetch('/check-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+    });
+
+    const data = await result.json();
+    document.getElementById('result').innerHTML = `<p>${data.message}</p>`;
+});
+
+document.getElementById('qrForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = document.getElementById('qrInput').files[0];
+    const reader = new FileReader();
+
+    reader.onload = async () => {
+        const qrCodeImage = reader.result;
+
+        // Decode QR Code and send URL to backend
+        const decodedUrl = decodeQRCode(qrCodeImage); // Implement QR decoding logic
+        const result = await fetch('/check-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: decodedUrl }),
+        });
+
+        const data = await result.json();
+        document.getElementById('result').innerHTML = `<p>${data.message}</p>`;
+    };
+
+    reader.readAsDataURL(file);
+});
+
+function decodeQRCode(imageData) {
+    // Use a library like jsQR to decode the QR code
+    console.log('Decoding QR Code...');
+    return 'https://decoded-url.com'; // Replace with actual decoded URL
+}
